@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Yearning — a soft place for unsent words</title>
+<meta name="description" content="A purple-black glittery keepsake for the people you miss. Save names, write unsent messages, and dial a number between 1 and 20 to hear a song." />
+<style>
+  :root{
+    --bg:#08030f; --bg2:#150826; --purple:#7a2bff; --purple2:#b06bff; --pink:#ff8fdc;
+    --ink:#f4ecff; --muted:#c9b8ee; --card:rgba(28,10,54,.72); --line:rgba(176,107,255,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%;font-family:"Segoe UI",Inter,system-ui,sans-serif;color:var(--ink)}
+  body{
+    background:
+      radial-gradient(1200px 800px at 10% -10%, #3b0f6b 0%, transparent 60%),
+      radial-gradient(900px 700px at 100% 20%, #5a1aa8 0%, transparent 55%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    overflow-x:hidden;
+  }
+  .glitter{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .glitter span{position:absolute;width:3px;height:3px;border-radius:50%;
+    background:radial-gradient(circle,#fff, #b06bff 60%, transparent 70%);
+    filter:drop-shadow(0 0 6px #b06bff);opacity:.8;animation:tw 4s infinite ease-in-out}
+  @keyframes tw{0%,100%{transform:translateY(0) scale(.6);opacity:.2}50%{transform:translateY(-12px) scale(1.2);opacity:1}}
+  .app{position:relative;z-index:1;min-height:100vh}
+  .screen{display:none;padding:32px 20px;max-width:520px;margin:0 auto}
+  .screen.active{display:block}
+  h1,h2,h3{font-family:"Segoe UI",serif;letter-spacing:.4px;margin:0 0 8px}
+  h1{font-size:34px;background:linear-gradient(90deg,#fff, #b06bff, #ff8fdc);-webkit-background-clip:text;color:transparent;text-shadow:0 0 20px rgba(176,107,255,.3)}
+  .sub{color:var(--muted);margin-bottom:22px;font-style:italic}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;backdrop-filter:blur(14px);box-shadow:0 20px 60px rgba(122,43,255,.25), inset 0 0 30px rgba(176,107,255,.06)}
+  label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:12px 0 6px}
+  input,textarea,select{width:100%;background:rgba(10,4,22,.7);border:1px solid var(--line);color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;outline:none;transition:.2s}
+  input:focus,textarea:focus{border-color:var(--purple2);box-shadow:0 0 0 3px rgba(176,107,255,.25)}
+  .row{display:flex;gap:10px}
+  .btn{cursor:pointer;border:none;padding:12px 18px;border-radius:999px;font-weight:600;font-size:14px;letter-spacing:.6px;
+    background:linear-gradient(135deg,#7a2bff,#b06bff);color:#fff;box-shadow:0 8px 30px rgba(122,43,255,.5);transition:.15s}
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);box-shadow:none}
+  .btn.small{padding:8px 12px;font-size:12px}
+  .link{color:var(--purple2);cursor:pointer;text-decoration:underline;font-size:13px}
+  .center{text-align:center}
+  .mt{margin-top:14px}
+  .mt2{margin-top:22px}
+  .love{font-family:Georgia,serif;font-style:italic;color:#ffd7f4;text-shadow:0 0 12px rgba(255,143,220,.4)}
+  .phone-wrap{display:flex;justify-content:center;padding:20px 0}
+  .iphone{width:320px;height:640px;background:#0a0416;border:10px solid #1a0b33;border-radius:48px;box-shadow:
+    0 0 0 2px #2a1350, 0 30px 80px rgba(122,43,255,.45), inset 0 0 40px rgba(176,107,255,.1);position:relative;overflow:hidden}
+  .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:110px;height:22px;background:#000;border-radius:14px;z-index:5}
+  .ip-screen{position:absolute;inset:0;padding:44px 14px 20px;overflow-y:auto;background:linear-gradient(180deg,#12052a,#1e0a44)}
+  .ip-screen::-webkit-scrollbar{width:4px}
+  .ip-screen::-webkit-scrollbar-thumb{background:var(--purple);border-radius:4px}
+  .ip-title{font-size:15px;font-weight:700;color:#fff;text-align:center;margin:6px 0 12px;letter-spacing:.5px}
+  .add-row{display:flex;gap:6px;margin-bottom:12px}
+  .add-row input{padding:9px 10px;font-size:13px;border-radius:10px}
+  .add-row .btn{padding:8px 12px;font-size:12px}
+  .contact{display:flex;align-items:center;gap:10px;background:rgba(122,43,255,.15);border:1px solid var(--line);padding:10px;border-radius:14px;margin-bottom:8px;cursor:pointer;transition:.15s}
+  .contact:hover{background:rgba(176,107,255,.25)}
+  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ff8fdc,#7a2bff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+  .contact .name{flex:1;font-size:14px}
+  .contact .del{color:#ff8fdc;font-size:12px;background:none;border:none;cursor:pointer}
+  .ip-actions{display:flex;gap:6px;justify-content:space-around;margin-top:10px}
+  .ip-actions button{flex:1;font-size:11px;padding:8px 4px}
+  .chat-head{display:flex;align-items:center;gap:10px;padding:6px 0 10px;border-bottom:1px solid var(--line)}
+  .chat-head .back{background:none;border:none;color:var(--purple2);font-size:20px;cursor:pointer;padding:0}
+  .msgs{height:400px;overflow-y:auto;padding:10px 4px;display:flex;flex-direction:column;gap:8px}
+  .msg{max-width:75%;padding:8px 12px;border-radius:16px;font-size:13px;word-wrap:break-word}
+  .msg.me{align-self:flex-end;background:linear-gradient(135deg,#7a2bff,#b06bff);color:#fff;border-bottom-right-radius:4px}
+  .msg.them{align-self:flex-start;background:rgba(255,255,255,.08);border-bottom-left-radius:4px}
+  .msg .time{display:block;font-size:9px;opacity:.6;margin-top:2px}
+  .chat-input{display:flex;gap:4px;margin-top:6px}
+  .chat-input input{font-size:13px;padding:9px 12px}
+  .dial-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  .dial-grid button{aspect-ratio:1;border-radius:50%;border:1px solid var(--line);background:rgba(122,43,255,.2);color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:.15s}
+  .dial-grid button:hover{background:linear-gradient(135deg,#7a2bff,#b06bff);transform:scale(1.05)}
+  .modal-bg{position:fixed;inset:0;background:rgba(3,0,10,.85);display:none;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(6px)}
+  .modal-bg.show{display:flex}
+  .modal{background:linear-gradient(180deg,#1a0836,#0a0316);border:1px solid var(--line);border-radius:20px;padding:24px;max-width:420px;width:92%;text-align:center;box-shadow:0 30px 80px rgba(122,43,255,.5)}
+  .modal h3{font-size:20px;background:linear-gradient(90deg,#fff,#ff8fdc);-webkit-background-clip:text;color:transparent}
+  .yt-hidden{position:fixed;left:-9999px;top:-9999px;width:1px;height:1px}
+  .yearn-banner{margin-top:18px;padding:16px;border-radius:14px;background:linear-gradient(135deg,rgba(255,143,220,.15),rgba(122,43,255,.2));border:1px solid var(--line);font-family:Georgia,serif;font-style:italic;color:#ffd7f4;text-shadow:0 0 14px rgba(255,143,220,.5);display:none}
+  .yearn-banner.show{display:block;animation:fadeIn 1s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 4px}
+  .brand{font-weight:700;letter-spacing:2px;font-size:12px;color:var(--muted)}
+  .empty{text-align:center;color:var(--muted);font-size:12px;padding:20px;font-style:italic}
+</style>
+</head>
+<body>
+<div class="glitter" id="glitter"></div>
+<div class="app">
+
+  <section class="screen active" id="screen-auth">
+    <div class="topbar"><span class="brand">✦ YEARNING ✦</span></div>
+    <div class="center" style="margin:30px 0 20px">
+      <h1>Yearning</h1>
+      <p class="sub">a soft place for the words you never sent.</p>
+    </div>
+    <div class="card">
+      <div id="auth-signup">
+        <label>Your name</label>
+        <input id="in-name" placeholder="e.g. Aria" />
+        <label>Email</label>
+        <input id="in-email" type="email" placeholder="you@heart.com" />
+        <label>Set a password</label>
+        <input id="in-pass" type="password" placeholder="something only you know" />
+        <label>Confirm password</label>
+        <input id="in-pass2" type="password" placeholder="type it again" />
+        <button class="btn mt2" style="width:100%" onclick="doSignup()">Done</button>
+        <div class="center mt"><span class="link" onclick="switchAuth('login')">Already have an account? Sign in</span></div>
+        <div class="center mt"><span class="link" onclick="forgotPass()">Forgot password?</span></div>
+      </div>
+      <div id="auth-login" style="display:none">
+        <label>Email</label>
+        <input id="li-email" type="email" />
+        <label>Password</label>
+        <input id="li-pass" type="password" />
+        <button class="btn mt2" style="width:100%" onclick="doLogin()">Sign in</button>
+        <div class="center mt"><span class="link" onclick="switchAuth('signup')">Create an account</span></div>
+        <div class="center mt"><span class="link" onclick="forgotPass()">Forgot password?</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-welcome">
+    <div class="center" style="margin:60px 0 20px">
+      <h1>Do you miss that person?</h1>
+      <p class="love">the one who lives in your quiet hours,<br/>whose name still tastes like sunlight —<br/>we kept a place for them.</p>
+    </div>
+    <div class="center mt2">
+      <button class="btn" onclick="go('phone')">Open my phone →</button>
+    </div>
+    <div class="center mt"><span class="link" onclick="go('settings')">Settings</span></div>
+  </section>
+
+  <section class="screen" id="screen-phone">
+    <div class="topbar">
+      <span class="link" onclick="go('welcome')">← back</span>
+      <span class="link" onclick="go('settings')">settings</span>
+    </div>
+    <div class="phone-wrap">
+      <div class="iphone">
+        <div class="notch"></div>
+        <div class="ip-screen" id="ip-view"></div>
+      </div>
+    </div>
+    <div class="yearn-banner" id="yearn-banner">YEARNING IS ENCOURAGED.</div>
+  </section>
+
+  <section class="screen" id="screen-settings">
+    <div class="topbar"><span class="link" onclick="go('welcome')">← back</span><span class="brand">SETTINGS</span></div>
+    <div class="card">
+      <label>About yourself</label>
+      <textarea id="about-me" rows="5" placeholder="who are you, when no one is listening?"></textarea>
+      <button class="btn mt" onclick="saveAbout()">Save</button>
+
+      <hr style="border:none;border-top:1px solid var(--line);margin:22px 0"/>
+      <label>Chat backup</label>
+      <p class="sub" style="font-size:12px">Your chats are safe. Even if you delete a chat, the history stays in your backup.</p>
+      <div class="row">
+        <button class="btn small" onclick="downloadBackup()">Download backup</button>
+        <button class="btn small ghost" onclick="document.getElementById('restore-file').click()">Restore</button>
+        <input type="file" id="restore-file" style="display:none" accept="application/json" onchange="restoreBackup(event)"/>
+      </div>
+      <div class="mt"><button class="btn small ghost" onclick="logout()">Log out</button></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="modal-bg" id="modal-unsent">
+  <div class="modal">
+    <h3>Send them your unsent message</h3>
+    <p class="sub">express your feeling. write in any language — your heart will translate itself.</p>
+    <button class="btn" onclick="closeModal('modal-unsent')">I'm ready</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-forgot">
+  <div class="modal">
+    <h3>Forgot password</h3>
+    <p class="sub">Enter your email and we'll show your saved password (kept only on this device).</p>
+    <input id="fp-email" type="email" placeholder="your email"/>
+    <div class="mt"><button class="btn" onclick="recoverPass()">Recover</button>
+    <button class="btn ghost" onclick="closeModal('modal-forgot')">Cancel</button></div>
+    <p id="fp-result" class="mt love"></p>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-call">
+  <div class="modal">
+    <h3 id="call-title">Calling…</h3>
+    <p class="sub">the line hums. a song is playing for you.</p>
+    <div id="yt-mount" class="yt-hidden"></div>
+    <button class="btn ghost mt" onclick="endCall()">Hang up</button>
+  </div>
+</div>
+
+<script>
+const SONGS = ["OE7IhVLrrNw","RjtjnwcHrX8","mu73q6oRjuk","tgVYh94QH8k","cNGjD0VG4R8","x9EoXWJ_cWM","a7fzkqLozwA","ICp785flBgU","FOiJKl6EHBk","rrCYMsV7A-c","WgTMeICssXY","NZGHXy1IAHM","bY4kEuki5hM","GhQxrCrVSyw","yOR5LKfdytA","55_31qXTjpE","mOkB5ZqVUww","nNJkh92SwUk","pyGU-UudvrM","AKnC-W-JPJk"];
+
+const store = {
+  get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},
+  set(k,v){localStorage.setItem(k,JSON.stringify(v))}
+};
+
+(function(){
+  const g=document.getElementById('glitter');
+  for(let i=0;i<90;i++){const s=document.createElement('span');
+    s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';
+    s.style.animationDelay=(Math.random()*4)+'s';
+    s.style.transform=`scale(${.5+Math.random()*1.5})`;
+    g.appendChild(s);}
+})();
+
+function go(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  if(name==='phone') renderContacts();
+  if(name==='settings') document.getElementById('about-me').value = store.get('about','') || '';
+  window.scrollTo(0,0);
+}
+function switchAuth(m){
+  document.getElementById('auth-signup').style.display = m==='signup'?'block':'none';
+  document.getElementById('auth-login').style.display = m==='login'?'block':'none';
+}
+
+function doSignup(){
+  const name=document.getElementById('in-name').value.trim();
+  const email=document.getElementById('in-email').value.trim();
+  const p1=document.getElementById('in-pass').value;
+  const p2=document.getElementById('in-pass2').value;
+  if(!name||!email||!p1) return alert('please fill everything');
+  if(p1!==p2) return alert('passwords do not match');
+  store.set('user',{name,email,password:p1});
+  go('welcome');
+}
+function doLogin(){
+  const u=store.get('user');
+  const e=document.getElementById('li-email').value.trim();
+  const p=document.getElementById('li-pass').value;
+  if(!u||u.email!==e||u.password!==p) return alert('no match — try again or sign up');
+  go('welcome');
+}
+function forgotPass(){openModal('modal-forgot')}
+function recoverPass(){
+  const e=document.getElementById('fp-email').value.trim();
+  const u=store.get('user');
+  const r=document.getElementById('fp-result');
+  if(u&&u.email===e) r.textContent='your password is: '+u.password;
+  else r.textContent='no account with that email on this device.';
+}
+function logout(){go('auth')}
+
+let view='list', activeId=null;
+function renderContacts(){
+  view='list'; activeId=null;
+  const ip=document.getElementById('ip-view');
+  const list=store.get('contacts',[]);
+  ip.innerHTML = `
+    <div class="ip-title">✦ Missed Ones ✦</div>
+    <div class="add-row">
+      <input id="new-contact" placeholder="add someone's name…"/>
+      <button class="btn" onclick="addContact()">+</button>
+    </div>
+    ${list.length===0?'<div class="empty">no one saved yet.<br/>who lives in your quiet?</div>':
+      list.map(c=>`
+        <div class="contact" onclick="openContact('${c.id}')">
+          <div class="avatar">${c.name.charAt(0).toUpperCase()}</div>
+          <div class="name">${escapeHtml(c.name)}</div>
+          <button class="del" onclick="event.stopPropagation();delContact('${c.id}')">✕</button>
+        </div>
+      `).join('')
+    }
+  `;
+  document.getElementById('new-contact')?.addEventListener('keydown',e=>{if(e.key==='Enter')addContact()});
+}
+function addContact(){
+  const el=document.getElementById('new-contact');
+  const n=el.value.trim(); if(!n) return;
+  const list=store.get('contacts',[]);
+  list.push({id:'c'+Date.now(),name:n});
+  store.set('contacts',list); renderContacts();
+}
+function delContact(id){
+  if(!confirm('remove this name from your phone? (their chats stay in your backup)')) return;
+  const list=store.get('contacts',[]).filter(c=>c.id!==id);
+  store.set('contacts',list);
+  const chats=store.get('chats',{});
+  if(chats[id]){
+    const arch=store.get('archive',{});
+    arch[id]=chats[id]; store.set('archive',arch);
+  }
+  renderContacts();
+}
+function openContact(id){
+  activeId=id; view='contact';
+  const c=store.get('contacts',[]).find(x=>x.id===id); if(!c) return renderContacts();
+  const ip=document.getElementById('ip-view');
+  ip.innerHTML=`
+    <div class="chat-head">
+      <button class="back" onclick="renderContacts()">‹</button>
+      <div class="avatar">${c.name.charAt(0).toUpperCase()}</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:14px">${escapeHtml(c.name)}</div><div style="font-size:10px;color:var(--muted)">always on your mind</div></div>
+    </div>
+    <div class="ip-actions">
+      <button class="btn" onclick="openChat('${id}')">💬 Chat</button>
+      <button class="btn ghost" onclick="openDial('${id}')">📞 Call</button>
+    </div>
+  `;
+}
+function openChat(id){
+  renderChat(id);
+  openModal('modal-unsent');
+}
+function renderChat(id){
+  activeId=id;
+  const c=store.get('contacts',[]).find(x=>x.id===id);
+  const chats=store.get('chats',{});
+  const msgs=chats[id]||[];
+  const ip=document.getElementById('ip-view');
+  ip.innerHTML=`
+    <div class="chat-head">
+      <button class="back" onclick="openContact('${id}')">‹</button>
+      <div class="avatar">${c.name.charAt(0).toUpperCase()}</div>
+      <div style="flex:1;font-weight:700;font-size:14px">${escapeHtml(c.name)}</div>
+    </div>
+    <div class="msgs" id="msgs">
+      ${msgs.length===0?'<div class="empty">no messages yet.<br/>tell them everything.</div>':
+        msgs.map(m=>`<div class="msg ${m.who}">${escapeHtml(m.text)}<span class="time">${new Date(m.at).toLocaleString()}</span></div>`).join('')}
+    </div>
+    <div class="chat-input">
+      <input id="chat-in" placeholder="say it, in any language…"/>
+      <button class="btn" onclick="sendMsg()">Send</button>
+    </div>
+  `;
+  const box=document.getElementById('msgs'); box.scrollTop=box.scrollHeight;
+  document.getElementById('chat-in').addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg()});
+}
+function sendMsg(){
+  const el=document.getElementById('chat-in'); const t=el.value.trim(); if(!t) return;
+  const chats=store.get('chats',{}); const arr=chats[activeId]||[];
+  arr.push({who:'me',text:t,at:Date.now()});
+  chats[activeId]=arr; store.set('chats',chats);
+  el.value=''; renderChat(activeId);
+}
+function openDial(id){
+  activeId=id;
+  const c=store.get('contacts',[]).find(x=>x.id===id);
+  const ip=document.getElementById('ip-view');
+  ip.innerHTML=`
+    <div class="chat-head">
+      <button class="back" onclick="openContact('${id}')">‹</button>
+      <div class="avatar">${c.name.charAt(0).toUpperCase()}</div>
+      <div style="flex:1;font-weight:700;font-size:14px">Call ${escapeHtml(c.name)}</div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin:8px 0">pick a number between 1 and 20 —<br/>the universe will decide the song.</p>
+    <div class="dial-grid">
+      ${Array.from({length:20},(_,i)=>`<button onclick="callNum(${i+1})">${i+1}</button>`).join('')}
+    </div>
+  `;
+}
+
+let ytPlayer=null, ytReady=false, ytPending=null;
+function loadYT(){
+  if(window.YT&&window.YT.Player){ytReady=true;return}
+  const s=document.createElement('script'); s.src='https://www.youtube.com/iframe_api'; document.head.appendChild(s);
+}
+window.onYouTubeIframeAPIReady=function(){ytReady=true; if(ytPending){const id=ytPending;ytPending=null;playSong(id)}};
+
+function callNum(n){
+  const id=SONGS[n-1];
+  document.getElementById('call-title').textContent='On the line…';
+  document.getElementById('yearn-banner').classList.remove('show');
+  openModal('modal-call');
+  if(!ytReady){ytPending=id; loadYT(); return}
+  playSong(id);
+}
+function playSong(videoId){
+  const mount=document.getElementById('yt-mount');
+  mount.innerHTML='<div id="yt-player"></div>';
+  ytPlayer=new YT.Player('yt-player',{
+    height:'1',width:'1',videoId,
+    playerVars:{autoplay:1,controls:0,disablekb:1,modestbranding:1,playsinline:1},
+    events:{
+      onReady:e=>e.target.playVideo(),
+      onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED) songEnded(); }
+    }
+  });
+}
+function songEnded(){
+  closeModal('modal-call');
+  const b=document.getElementById('yearn-banner');
+  b.textContent='YEARNING IS ENCOURAGED.';
+  b.classList.add('show');
+}
+function endCall(){
+  try{ytPlayer&&ytPlayer.destroy&&ytPlayer.destroy()}catch{}
+  document.getElementById('yt-mount').innerHTML='';
+  closeModal('modal-call');
+}
+
+function saveAbout(){store.set('about',document.getElementById('about-me').value); alert('saved.')}
+function downloadBackup(){
+  const data={user:store.get('user'),contacts:store.get('contacts',[]),chats:store.get('chats',{}),archive:store.get('archive',{}),about:store.get('about','')};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='yearning-backup.json'; a.click();
+}
+function restoreBackup(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(d.user)store.set('user',d.user);
+    if(d.contacts)store.set('contacts',d.contacts);
+    if(d.chats)store.set('chats',d.chats);
+    if(d.archive)store.set('archive',d.archive);
+    if(d.about!==undefined)store.set('about',d.about);
+    alert('restored.'); go('welcome');
+  }catch{alert('bad file')}};
+  r.readAsText(f);
+}
+
+function openModal(id){document.getElementById(id).classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+if(store.get('user')) switchAuth('login');
+</script>
+</body>
+</html>
